@@ -25,25 +25,23 @@
     - [更新指定用户信息](#更新指定用户信息)
     - [删除用户](#删除用户)
     - [为用户分配角色](#为用户分配角色)
-  - [🚨 常见错误处理](#-常见错误处理)
-    - [401 未授权](#401-未授权)
-    - [403 权限不足](#403-权限不足)
-    - [404 资源不存在](#404-资源不存在)
-    - [422 参数验证错误](#422-参数验证错误)
-  - [🔧 SDK使用示例](#-sdk使用示例)
-    - [JavaScript/TypeScript](#javascripttypescript)
-    - [Python SDK](#python-sdk)
-  - [🔍 测试工具](#-测试工具)
-    - [Postman集合导入](#postman集合导入)
-    - [环境变量设置](#环境变量设置)
-    - [HTTPie命令示例](#httpie命令示例)
-  - [📚 API状态码说明](#-api状态码说明)
-  - [📋 API版本控制](#-api版本控制)
-  - [🔗 相关链接](#-相关链接)
-  - [📝 更新日志](#-更新日志)
-    - [v1.0.0 (2024-01-01)](#v100-2024-01-01)
-    - [未来版本计划](#未来版本计划)
-  - [💡 使用建议](#-使用建议)
+  - [🎭 角色管理API](#-角色管理api)
+    - [创建角色](#创建角色)
+    - [分页获取角色列表](#分页获取角色列表)
+    - [获取指定角色信息](#获取指定角色信息)
+    - [更新角色信息](#更新角色信息)
+    - [删除角色](#删除角色)
+    - [为角色分配用户](#为角色分配用户)
+    - [为角色分配菜单](#为角色分配菜单)
+  - [🍔 菜单管理API](#-菜单管理api)
+    - [创建菜单](#创建菜单)
+    - [分页获取菜单列表](#分页获取菜单列表)
+    - [获取菜单树形结构](#获取菜单树形结构)
+    - [获取当前用户菜单](#获取当前用户菜单)
+    - [获取指定用户菜单](#获取指定用户菜单)
+    - [获取指定菜单信息](#获取指定菜单信息)
+    - [更新菜单信息](#更新菜单信息)
+    - [删除菜单](#删除菜单)
 
 ## 🔐 认证说明
 
@@ -609,7 +607,9 @@ curl -X DELETE "http://localhost:8000/api/users/1" \
 curl -X POST "http://localhost:8000/api/users/1/roles" \
   -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..." \
   -H "Content-Type: application/json" \
-  -d '[1, 2, 3]'
+  -d '{
+    "role_ids": [1, 2, 3]
+  }'
 ```
 
 **路径参数**：
@@ -620,7 +620,9 @@ curl -X POST "http://localhost:8000/api/users/1/roles" \
 
 **请求参数**：
 
-传递角色ID数组，例如：`[1, 2, 3]`
+| 参数 | 类型 | 必填 | 描述 |
+|------|------|------|------|
+| role_ids | array | 是 | 角色ID列表 |
 
 **成功响应**：
 
@@ -633,442 +635,748 @@ curl -X POST "http://localhost:8000/api/users/1/roles" \
 }
 ```
 
-## 🚨 常见错误处理
+## 🎭 角色管理API
 
-### 401 未授权
+### 创建角色
+
+**接口地址**：`POST /api/roles`
+
+**权限要求**：需要超级管理员权限
+
+**请求示例**：
+
+```bash
+curl -X POST "http://localhost:8000/api/roles" \
+  -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "管理员",
+    "code": "admin",
+    "description": "系统管理员，拥有所有权限",
+    "is_active": true
+  }'
+```
+
+**请求参数**：
+
+| 参数 | 类型 | 必填 | 描述 |
+|------|------|------|------|
+| name | string | 是 | 角色名称（1-50字符） |
+| code | string | 是 | 角色代码（1-50字符） |
+| description | string | 否 | 角色描述（最大255字符） |
+| is_active | boolean | 否 | 是否启用（默认true） |
+
+**成功响应**：
 
 ```json
 {
-    "code": 401,
-    "message": "未授权访问",
+    "code": 200,
+    "message": "角色创建成功",
+    "data": {
+        "id": 1,
+        "name": "管理员",
+        "code": "admin",
+        "description": "系统管理员，拥有所有权限",
+        "is_active": true,
+        "created_at": "2024-01-01T10:00:00Z",
+        "updated_at": "2024-01-01T10:00:00Z"
+    },
+    "timestamp": 1704096000000
+}
+```
+
+### 分页获取角色列表
+
+**接口地址**：`GET /api/roles`
+
+**权限要求**：需要用户Token
+
+**请求示例**：
+
+```bash
+curl -X GET "http://localhost:8000/api/roles?page=1&per_page=10&search=管理" \
+  -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
+```
+
+**查询参数**：
+
+| 参数 | 类型 | 必填 | 描述 |
+|------|------|------|------|
+| page | integer | 否 | 页码（默认1） |
+| per_page | integer | 否 | 每页数量（默认10，最大100） |
+| search | string | 否 | 搜索关键词 |
+
+**成功响应**：
+
+```json
+{
+    "code": 200,
+    "message": "查询成功",
+    "data": {
+        "items": [
+            {
+                "id": 1,
+                "name": "管理员",
+                "code": "admin",
+                "description": "系统管理员，拥有所有权限",
+                "is_active": true,
+                "created_at": "2024-01-01T10:00:00Z",
+                "updated_at": "2024-01-01T10:00:00Z"
+            },
+            {
+                "id": 2,
+                "name": "普通用户",
+                "code": "user",
+                "description": "普通用户权限",
+                "is_active": true,
+                "created_at": "2024-01-01T11:00:00Z",
+                "updated_at": "2024-01-01T11:00:00Z"
+            }
+        ],
+        "pagination": {
+            "page": 1,
+            "per_page": 10,
+            "total": 2,
+            "pages": 1,
+            "has_next": false,
+            "has_prev": false
+        }
+    },
+    "timestamp": 1704096000000
+}
+```
+
+### 获取指定角色信息
+
+**接口地址**：`GET /api/roles/{role_id}`
+
+**权限要求**：需要用户Token
+
+**请求示例**：
+
+```bash
+curl -X GET "http://localhost:8000/api/roles/1" \
+  -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
+```
+
+**路径参数**：
+
+| 参数 | 类型 | 必填 | 描述 |
+|------|------|------|------|
+| role_id | integer | 是 | 角色ID |
+
+**成功响应**：
+
+```json
+{
+    "code": 200,
+    "message": "查询成功",
+    "data": {
+        "id": 1,
+        "name": "管理员",
+        "code": "admin",
+        "description": "系统管理员，拥有所有权限",
+        "is_active": true,
+        "created_at": "2024-01-01T10:00:00Z",
+        "updated_at": "2024-01-01T10:00:00Z"
+    },
+    "timestamp": 1704096000000
+}
+```
+
+### 更新角色信息
+
+**接口地址**：`PUT /api/roles/{role_id}`
+
+**权限要求**：需要超级管理员权限
+
+**请求示例**：
+
+```bash
+curl -X PUT "http://localhost:8000/api/roles/1" \
+  -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "高级管理员",
+    "description": "高级管理员，拥有更多权限"
+  }'
+```
+
+**路径参数**：
+
+| 参数 | 类型 | 必填 | 描述 |
+|------|------|------|------|
+| role_id | integer | 是 | 角色ID |
+
+**请求参数**：
+
+| 参数 | 类型 | 必填 | 描述 |
+|------|------|------|------|
+| name | string | 否 | 角色名称（1-50字符） |
+| code | string | 否 | 角色代码（1-50字符） |
+| description | string | 否 | 角色描述（最大255字符） |
+| is_active | boolean | 否 | 是否启用 |
+
+**成功响应**：
+
+```json
+{
+    "code": 200,
+    "message": "更新成功",
+    "data": {
+        "id": 1,
+        "name": "高级管理员",
+        "code": "admin",
+        "description": "高级管理员，拥有更多权限",
+        "is_active": true,
+        "created_at": "2024-01-01T10:00:00Z",
+        "updated_at": "2024-01-01T14:00:00Z"
+    },
+    "timestamp": 1704096000000
+}
+```
+
+### 删除角色
+
+**接口地址**：`DELETE /api/roles/{role_id}`
+
+**权限要求**：需要超级管理员权限
+
+**请求示例**：
+
+```bash
+curl -X DELETE "http://localhost:8000/api/roles/1" \
+  -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
+```
+
+**路径参数**：
+
+| 参数 | 类型 | 必填 | 描述 |
+|------|------|------|------|
+| role_id | integer | 是 | 角色ID |
+
+**成功响应**：
+
+```json
+{
+    "code": 200,
+    "message": "删除成功",
+    "data": {
+        "id": 1,
+        "deleted": true
+    },
+    "timestamp": 1704096000000
+}
+```
+
+### 为角色分配用户
+
+**接口地址**：`POST /api/roles/{role_id}/users`
+
+**权限要求**：需要超级管理员权限
+
+**请求示例**：
+
+```bash
+curl -X POST "http://localhost:8000/api/roles/1/users" \
+  -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "user_ids": [1, 2, 3]
+  }'
+```
+
+**路径参数**：
+
+| 参数 | 类型 | 必填 | 描述 |
+|------|------|------|------|
+| role_id | integer | 是 | 角色ID |
+
+**请求参数**：
+
+| 参数 | 类型 | 必填 | 描述 |
+|------|------|------|------|
+| user_ids | array | 是 | 用户ID列表 |
+
+**成功响应**：
+
+```json
+{
+    "code": 200,
+    "message": "用户分配成功",
     "data": null,
     "timestamp": 1704096000000
 }
 ```
 
-### 403 权限不足
+### 为角色分配菜单
+
+**接口地址**：`POST /api/roles/{role_id}/menus`
+
+**权限要求**：需要超级管理员权限
+
+**请求示例**：
+
+```bash
+curl -X POST "http://localhost:8000/api/roles/1/menus" \
+  -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "menu_ids": [1, 2, 3, 4]
+  }'
+```
+
+**路径参数**：
+
+| 参数 | 类型 | 必填 | 描述 |
+|------|------|------|------|
+| role_id | integer | 是 | 角色ID |
+
+**请求参数**：
+
+| 参数 | 类型 | 必填 | 描述 |
+|------|------|------|------|
+| menu_ids | array | 是 | 菜单ID列表 |
+
+**成功响应**：
 
 ```json
 {
-    "code": 403,
-    "message": "权限不足",
+    "code": 200,
+    "message": "菜单分配成功",
     "data": null,
     "timestamp": 1704096000000
 }
 ```
 
-### 404 资源不存在
+## 🍔 菜单管理API
+
+### 创建菜单
+
+**接口地址**：`POST /api/menus`
+
+**权限要求**：需要超级管理员权限
+
+**请求示例**：
+
+```bash
+curl -X POST "http://localhost:8000/api/menus" \
+  -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "用户管理",
+    "path": "/users",
+    "component": "UserManagement",
+    "icon": "user",
+    "order_num": 1,
+    "parent_id": null,
+    "menu_type": "menu",
+    "permission": "user:list",
+    "is_visible": true,
+    "is_active": true
+  }'
+```
+
+**请求参数**：
+
+| 参数 | 类型 | 必填 | 描述 |
+|------|------|------|------|
+| name | string | 是 | 菜单名称（1-50字符） |
+| path | string | 否 | 菜单路径（最大255字符） |
+| component | string | 否 | 组件路径（最大255字符） |
+| icon | string | 否 | 菜单图标（最大100字符） |
+| order_num | integer | 否 | 排序号（默认0） |
+| parent_id | integer | 否 | 父菜单ID |
+| menu_type | string | 否 | 菜单类型：menu菜单，button按钮（默认menu） |
+| permission | string | 否 | 权限标识（最大100字符） |
+| is_visible | boolean | 否 | 是否显示（默认true） |
+| is_active | boolean | 否 | 是否启用（默认true） |
+
+**成功响应**：
 
 ```json
 {
-    "code": 404,
-    "message": "用户不存在",
-    "data": null,
+    "code": 200,
+    "message": "菜单创建成功",
+    "data": {
+        "id": 1,
+        "name": "用户管理",
+        "path": "/users",
+        "component": "UserManagement",
+        "icon": "user",
+        "order_num": 1,
+        "parent_id": null,
+        "menu_type": "menu",
+        "permission": "user:list",
+        "is_visible": true,
+        "is_active": true,
+        "created_at": "2024-01-01T10:00:00Z",
+        "updated_at": "2024-01-01T10:00:00Z"
+    },
     "timestamp": 1704096000000
 }
 ```
 
-### 422 参数验证错误
+### 分页获取菜单列表
+
+**接口地址**：`GET /api/menus`
+
+**权限要求**：需要用户Token
+
+**请求示例**：
+
+```bash
+curl -X GET "http://localhost:8000/api/menus?page=1&per_page=10&search=用户" \
+  -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
+```
+
+**查询参数**：
+
+| 参数 | 类型 | 必填 | 描述 |
+|------|------|------|------|
+| page | integer | 否 | 页码（默认1） |
+| per_page | integer | 否 | 每页数量（默认10，最大100） |
+| search | string | 否 | 搜索关键词 |
+
+**成功响应**：
+
+```json
+{
+    "code": 200,
+    "message": "查询成功",
+    "data": {
+        "items": [
+            {
+                "id": 1,
+                "name": "用户管理",
+                "path": "/users",
+                "component": "UserManagement",
+                "icon": "user",
+                "order_num": 1,
+                "parent_id": null,
+                "menu_type": "menu",
+                "permission": "user:list",
+                "is_visible": true,
+                "is_active": true,
+                "created_at": "2024-01-01T10:00:00Z",
+                "updated_at": "2024-01-01T10:00:00Z"
+            }
+        ],
+        "pagination": {
+            "page": 1,
+            "per_page": 10,
+            "total": 1,
+            "pages": 1,
+            "has_next": false,
+            "has_prev": false
+        }
+    },
+    "timestamp": 1704096000000
+}
+```
+
+### 获取菜单树形结构
+
+**接口地址**：`GET /api/menus/tree`
+
+**权限要求**：需要用户Token
+
+**请求示例**：
+
+```bash
+curl -X GET "http://localhost:8000/api/menus/tree" \
+  -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
+```
+
+**成功响应**：
+
+```json
+{
+    "code": 200,
+    "message": "查询成功",
+    "data": [
+        {
+            "id": 1,
+            "name": "系统管理",
+            "path": "/system",
+            "component": "Layout",
+            "icon": "setting",
+            "order_num": 1,
+            "parent_id": null,
+            "menu_type": "menu",
+            "permission": null,
+            "is_visible": true,
+            "is_active": true,
+            "children": [
+                {
+                    "id": 2,
+                    "name": "用户管理",
+                    "path": "/system/users",
+                    "component": "UserManagement",
+                    "icon": "user",
+                    "order_num": 1,
+                    "parent_id": 1,
+                    "menu_type": "menu",
+                    "permission": "user:list",
+                    "is_visible": true,
+                    "is_active": true,
+                    "children": []
+                }
+            ]
+        }
+    ],
+    "timestamp": 1704096000000
+}
+```
+
+### 获取当前用户菜单
+
+**接口地址**：`GET /api/menus/me`
+
+**权限要求**：需要用户Token
+
+**请求示例**：
+
+```bash
+curl -X GET "http://localhost:8000/api/menus/me" \
+  -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
+```
+
+**成功响应**：
+
+```json
+{
+    "code": 200,
+    "message": "查询成功",
+    "data": [
+        {
+            "id": 1,
+            "name": "系统管理",
+            "path": "/system",
+            "component": "Layout",
+            "icon": "setting",
+            "order_num": 1,
+            "parent_id": null,
+            "menu_type": "menu",
+            "permission": null,
+            "is_visible": true,
+            "is_active": true,
+            "children": [
+                {
+                    "id": 2,
+                    "name": "用户管理",
+                    "path": "/system/users",
+                    "component": "UserManagement",
+                    "icon": "user",
+                    "order_num": 1,
+                    "parent_id": 1,
+                    "menu_type": "menu",
+                    "permission": "user:list",
+                    "is_visible": true,
+                    "is_active": true,
+                    "children": []
+                }
+            ]
+        }
+    ],
+    "timestamp": 1704096000000
+}
+```
+
+### 获取指定用户菜单
+
+**接口地址**：`GET /api/menus/user/{user_id}`
+
+**权限要求**：需要用户Token（只能查看自己的菜单或超级管理员查看任何人的菜单）
+
+**请求示例**：
+
+```bash
+curl -X GET "http://localhost:8000/api/menus/user/1" \
+  -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
+```
+
+**路径参数**：
+
+| 参数 | 类型 | 必填 | 描述 |
+|------|------|------|------|
+| user_id | integer | 是 | 用户ID |
+
+**成功响应**：
+
+```json
+{
+    "code": 200,
+    "message": "查询成功",
+    "data": [
+        {
+            "id": 1,
+            "name": "系统管理",
+            "path": "/system",
+            "component": "Layout",
+            "icon": "setting",
+            "order_num": 1,
+            "parent_id": null,
+            "menu_type": "menu",
+            "permission": null,
+            "is_visible": true,
+            "is_active": true,
+            "children": []
+        }
+    ],
+    "timestamp": 1704096000000
+}
+```
+
+### 获取指定菜单信息
+
+**接口地址**：`GET /api/menus/{menu_id}`
+
+**权限要求**：需要用户Token
+
+**请求示例**：
+
+```bash
+curl -X GET "http://localhost:8000/api/menus/1" \
+  -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
+```
+
+**路径参数**：
+
+| 参数 | 类型 | 必填 | 描述 |
+|------|------|------|------|
+| menu_id | integer | 是 | 菜单ID |
+
+**成功响应**：
+
+```json
+{
+    "code": 200,
+    "message": "查询成功",
+    "data": {
+        "id": 1,
+        "name": "用户管理",
+        "path": "/users",
+        "component": "UserManagement",
+        "icon": "user",
+        "order_num": 1,
+        "parent_id": null,
+        "menu_type": "menu",
+        "permission": "user:list",
+        "is_visible": true,
+        "is_active": true,
+        "created_at": "2024-01-01T10:00:00Z",
+        "updated_at": "2024-01-01T10:00:00Z"
+    },
+    "timestamp": 1704096000000
+}
+```
+
+### 更新菜单信息
+
+**接口地址**：`PUT /api/menus/{menu_id}`
+
+**权限要求**：需要超级管理员权限
+
+**请求示例**：
+
+```bash
+curl -X PUT "http://localhost:8000/api/menus/1" \
+  -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "高级用户管理",
+    "path": "/advanced-users",
+    "icon": "user-plus"
+  }'
+```
+
+**路径参数**：
+
+| 参数 | 类型 | 必填 | 描述 |
+|------|------|------|------|
+| menu_id | integer | 是 | 菜单ID |
+
+**请求参数**：
+
+| 参数 | 类型 | 必填 | 描述 |
+|------|------|------|------|
+| name | string | 否 | 菜单名称（1-50字符） |
+| path | string | 否 | 菜单路径（最大255字符） |
+| component | string | 否 | 组件路径（最大255字符） |
+| icon | string | 否 | 菜单图标（最大100字符） |
+| order_num | integer | 否 | 排序号（默认0） |
+| parent_id | integer | 否 | 父菜单ID |
+| menu_type | string | 否 | 菜单类型：menu菜单，button按钮（默认menu） |
+| permission | string | 否 | 权限标识（最大100字符） |
+| is_visible | boolean | 否 | 是否显示（默认true） |
+| is_active | boolean | 否 | 是否启用（默认true） |
+
+**成功响应**：
+
+```json
+{
+    "code": 200,
+    "message": "更新成功",
+    "data": {
+        "id": 1,
+        "name": "高级用户管理",
+        "path": "/advanced-users",
+        "component": "AdvancedUserManagement",
+        "icon": "user-plus",
+        "order_num": 5,
+        "parent_id": null,
+        "menu_type": "menu",
+        "permission": "user:advanced",
+        "is_visible": true,
+        "is_active": true,
+        "created_at": "2024-01-01T10:00:00Z",
+        "updated_at": "2024-01-01T15:00:00Z"
+    },
+    "timestamp": 1704096000000
+}
+```
+
+### 删除菜单
+
+**接口地址**：`DELETE /api/menus/{menu_id}`
+
+**权限要求**：需要超级管理员权限
+
+**请求示例**：
+
+```bash
+curl -X DELETE "http://localhost:8000/api/menus/1" \
+  -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
+```
+
+**路径参数**：
+
+| 参数 | 类型 | 必填 | 描述 |
+|------|------|------|------|
+| menu_id | integer | 是 | 菜单ID |
+
+**成功响应**：
+
+```json
+{
+    "code": 200,
+    "message": "删除成功",
+    "data": {
+        "id": 1,
+        "deleted": true
+    },
+    "timestamp": 1704096000000
+}
+```
+
+**错误响应示例**：
 
 ```json
 {
     "code": 400,
-    "message": "参数验证失败",
-    "data": {
-        "errors": {
-            "email": ["邮箱格式不正确"],
-            "password": ["密码长度至少6位"]
-        }
-    },
+    "message": "存在子菜单，不能删除",
+    "data": null,
     "timestamp": 1704096000000
 }
 ```
-
-## 🔧 SDK使用示例
-
-### JavaScript/TypeScript
-
-```javascript
-// API客户端封装
-class ApiClient {
-    constructor(baseURL = 'http://localhost:8000', token = null) {
-        this.baseURL = baseURL;
-        this.token = token;
-    }
-
-    setToken(token) {
-        this.token = token;
-    }
-
-    async request(method, endpoint, data = null) {
-        const headers = {
-            'Content-Type': 'application/json',
-        };
-
-        if (this.token) {
-            headers['Authorization'] = `Bearer ${this.token}`;
-        }
-
-        const config = {
-            method,
-            headers,
-        };
-
-        if (data) {
-            config.body = JSON.stringify(data);
-        }
-
-        const response = await fetch(`${this.baseURL}${endpoint}`, config);
-        return await response.json();
-    }
-
-    // 用户注册
-    async register(userData) {
-        return await this.request('POST', '/api/users/register', userData);
-    }
-
-    // 用户登录
-    async login(credentials) {
-        const result = await this.request('POST', '/api/users/login', credentials);
-        if (result.code === 200) {
-            this.setToken(result.data.access_token);
-        }
-        return result;
-    }
-
-    // 获取当前用户信息
-    async getCurrentUser() {
-        return await this.request('GET', '/api/users/me');
-    }
-
-    // 更新当前用户信息
-    async updateCurrentUser(userData) {
-        return await this.request('PUT', '/api/users/me', userData);
-    }
-
-    // 修改密码
-    async changePassword(passwordData) {
-        return await this.request('PUT', '/api/users/me/password', passwordData);
-    }
-
-    // 获取用户列表
-    async getUsers(page = 1, perPage = 10, search = '') {
-        const params = new URLSearchParams({
-            page: page.toString(),
-            per_page: perPage.toString(),
-        });
-        
-        if (search) {
-            params.append('search', search);
-        }
-
-        return await this.request('GET', `/api/users?${params}`);
-    }
-}
-
-// 使用示例
-const api = new ApiClient();
-
-// 用户注册
-async function registerUser() {
-    try {
-        const result = await api.register({
-            username: 'testuser',
-            email: 'test@example.com',
-            password: '123456',
-            confirm_password: '123456'
-        });
-        
-        if (result.code === 200) {
-            console.log('注册成功:', result.data);
-        } else {
-            console.error('注册失败:', result.message);
-        }
-    } catch (error) {
-        console.error('请求错误:', error);
-    }
-}
-
-// 用户登录
-async function loginUser() {
-    try {
-        const result = await api.login({
-            username: 'testuser',
-            password: '123456'
-        });
-        
-        if (result.code === 200) {
-            console.log('登录成功:', result.data);
-            localStorage.setItem('access_token', result.data.access_token);
-        } else {
-            console.error('登录失败:', result.message);
-        }
-    } catch (error) {
-        console.error('请求错误:', error);
-    }
-}
-```
-
-### Python SDK
-
-```python
-import requests
-import json
-from typing import Optional, Dict, Any
-
-class ApiClient:
-    def __init__(self, base_url: str = "http://localhost:8000", token: Optional[str] = None):
-        self.base_url = base_url
-        self.token = token
-        self.session = requests.Session()
-    
-    def set_token(self, token: str):
-        """设置认证令牌"""
-        self.token = token
-        self.session.headers.update({'Authorization': f'Bearer {token}'})
-    
-    def request(self, method: str, endpoint: str, data: Optional[Dict] = None) -> Dict[str, Any]:
-        """发送HTTP请求"""
-        url = f"{self.base_url}{endpoint}"
-        headers = {'Content-Type': 'application/json'}
-        
-        if self.token:
-            headers['Authorization'] = f'Bearer {self.token}'
-        
-        response = self.session.request(
-            method=method,
-            url=url,
-            headers=headers,
-            json=data if data else None
-        )
-        
-        return response.json()
-    
-    def register(self, user_data: Dict) -> Dict[str, Any]:
-        """用户注册"""
-        return self.request('POST', '/api/users/register', user_data)
-    
-    def login(self, credentials: Dict) -> Dict[str, Any]:
-        """用户登录"""
-        result = self.request('POST', '/api/users/login', credentials)
-        if result.get('code') == 200:
-            self.set_token(result['data']['access_token'])
-        return result
-    
-    def get_current_user(self) -> Dict[str, Any]:
-        """获取当前用户信息"""
-        return self.request('GET', '/api/users/me')
-    
-    def update_current_user(self, user_data: Dict) -> Dict[str, Any]:
-        """更新当前用户信息"""
-        return self.request('PUT', '/api/users/me', user_data)
-    
-    def change_password(self, password_data: Dict) -> Dict[str, Any]:
-        """修改密码"""
-        return self.request('PUT', '/api/users/me/password', password_data)
-    
-    def get_users(self, page: int = 1, per_page: int = 10, search: str = '') -> Dict[str, Any]:
-        """获取用户列表"""
-        params = f"?page={page}&per_page={per_page}"
-        if search:
-            params += f"&search={search}"
-        return self.request('GET', f'/api/users{params}')
-
-# 使用示例
-def main():
-    api = ApiClient()
-    
-    # 用户注册
-    try:
-        result = api.register({
-            'username': 'testuser',
-            'email': 'test@example.com',
-            'password': '123456',
-            'confirm_password': '123456'
-        })
-        
-        if result['code'] == 200:
-            print('注册成功:', result['data'])
-        else:
-            print('注册失败:', result['message'])
-    except Exception as e:
-        print('请求错误:', e)
-    
-    # 用户登录
-    try:
-        result = api.login({
-            'username': 'testuser',
-            'password': '123456'
-        })
-        
-        if result['code'] == 200:
-            print('登录成功:', result['data'])
-        else:
-            print('登录失败:', result['message'])
-    except Exception as e:
-        print('请求错误:', e)
-
-if __name__ == '__main__':
-    main()
-```
-
-## 🔍 测试工具
-
-### Postman集合导入
-
-您可以创建Postman集合来测试API：
-
-```json
-{
-    "info": {
-        "name": "FastAPI 后端管理系统",
-        "description": "用户管理API测试集合",
-        "version": "1.0.0"
-    },
-    "item": [
-        {
-            "name": "用户注册",
-            "request": {
-                "method": "POST",
-                "header": [
-                    {
-                        "key": "Content-Type",
-                        "value": "application/json"
-                    }
-                ],
-                "body": {
-                    "mode": "raw",
-                    "raw": "{\n  \"username\": \"testuser\",\n  \"email\": \"test@example.com\",\n  \"password\": \"123456\",\n  \"confirm_password\": \"123456\"\n}"
-                },
-                "url": {
-                    "raw": "{{baseUrl}}/api/users/register",
-                    "host": ["{{baseUrl}}"],
-                    "path": ["api", "users", "register"]
-                }
-            }
-        },
-        {
-            "name": "用户登录",
-            "request": {
-                "method": "POST",
-                "header": [
-                    {
-                        "key": "Content-Type",
-                        "value": "application/json"
-                    }
-                ],
-                "body": {
-                    "mode": "raw",
-                    "raw": "{\n  \"username\": \"testuser\",\n  \"password\": \"123456\"\n}"
-                },
-                "url": {
-                    "raw": "{{baseUrl}}/api/users/login",
-                    "host": ["{{baseUrl}}"],
-                    "path": ["api", "users", "login"]
-                }
-            }
-        }
-    ],
-    "variable": [
-        {
-            "key": "baseUrl",
-            "value": "http://localhost:8000"
-        },
-        {
-            "key": "accessToken",
-            "value": ""
-        }
-    ]
-}
-```
-
-### 环境变量设置
-
-在Postman中设置以下环境变量：
-
-| 变量名 | 值 | 描述 |
-|--------|----|----|
-| baseUrl | http://localhost:8000 | API基础地址 |
-| accessToken | (登录后设置) | JWT访问令牌 |
-
-### HTTPie命令示例
-
-使用HTTPie工具测试API：
-
-```bash
-# 用户注册
-http POST localhost:8000/api/users/register \
-  username=testuser \
-  email=test@example.com \
-  password=123456 \
-  confirm_password=123456
-
-# 用户登录
-http POST localhost:8000/api/users/login \
-  username=testuser \
-  password=123456
-
-# 获取当前用户信息（需要先登录获取token）
-http GET localhost:8000/api/users/me \
-  Authorization:"Bearer YOUR_ACCESS_TOKEN"
-
-# 分页获取用户列表
-http GET localhost:8000/api/users \
-  Authorization:"Bearer YOUR_ACCESS_TOKEN" \
-  page==1 \
-  per_page==10 \
-  search=="test"
-```
-
-## 📚 API状态码说明
-
-| 状态码 | 说明 | 场景 |
-|--------|------|------|
-| 200 | 成功 | 请求成功处理 |
-| 400 | 请求错误 | 参数验证失败、业务逻辑错误 |
-| 401 | 未授权 | 未提供认证信息或认证失败 |
-| 403 | 禁止访问 | 权限不足 |
-| 404 | 资源不存在 | 请求的资源未找到 |
-| 422 | 参数验证失败 | 请求参数格式错误 |
-| 500 | 服务器错误 | 服务器内部错误 |
-
-## 📋 API版本控制
-
-当前API版本：`v1.0.0`
-
-版本控制策略：
-- **主版本号**：不兼容的API修改
-- **次版本号**：向下兼容的功能新增
-- **修订号**：向下兼容的问题修正
-
-## 🔗 相关链接
-
-- **项目仓库**：[GitHub Repository](https://github.com/your-username/fastapi-admin)
-- **在线文档**：[API Documentation](http://localhost:8000/docs)
-- **问题反馈**：[Issue Tracker](https://github.com/your-username/fastapi-admin/issues)
-
-## 📝 更新日志
-
-### v1.0.0 (2024-01-01)
-- ✅ 用户管理API
-- ✅ JWT认证
-- ✅ 统一响应格式
-- ✅ 分页查询支持
-- ✅ 完整的错误处理
-
-### 未来版本计划
-- 🔄 角色管理API
-- 🔄 菜单管理API
-- 🔄 文件上传API
-- 🔄 消息通知API
-
----
-
-## 💡 使用建议
-
-1. **开发环境**：使用Swagger UI进行接口调试
-2. **生产环境**：使用SDK进行API调用
-3. **测试**：使用Postman或HTTPie进行集成测试
-4. **监控**：关注API响应时间和错误率
-
-希望这份API使用示例文档能帮助您快速上手FastAPI后端管理系统！如有问题，请参考项目文档或提交Issue。

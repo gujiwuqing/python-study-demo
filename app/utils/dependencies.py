@@ -2,7 +2,7 @@
 FastAPI依赖注入
 """
 from typing import Optional
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, status, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.utils.database import get_db
@@ -10,19 +10,21 @@ from app.utils.auth import verify_token
 from app.services.user_service import UserService
 from app.models.user import User
 
-# JWT令牌认证
-security = HTTPBearer()
+# JWT令牌认证 - 设置为可选
+security = HTTPBearer(auto_error=False)
 
 
 async def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Depends(security),
+    request: Request,
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(security),
     db: AsyncSession = Depends(get_db)
 ) -> User:
     """
     获取当前登录用户
     
     Args:
-        credentials: JWT凭证
+        request: 请求对象
+        credentials: JWT凭证（可选）
         db: 数据库会话
         
     Returns:
@@ -31,12 +33,20 @@ async def get_current_user(
     Raises:
         HTTPException: 认证失败
     """
+    # 检查是否提供了认证凭证
+    if not credentials:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="认证失败：缺少认证令牌",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
     # 验证令牌
     payload = verify_token(credentials.credentials)
     if not payload:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="无效的认证凭证",
+            detail="认证失败：Token无效或已过期",
             headers={"WWW-Authenticate": "Bearer"},
         )
     
@@ -45,7 +55,7 @@ async def get_current_user(
     if user_id is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="无效的认证凭证",
+            detail="认证失败：Token中缺少用户信息",
             headers={"WWW-Authenticate": "Bearer"},
         )
     
@@ -54,14 +64,14 @@ async def get_current_user(
     if user is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="用户不存在",
+            detail="认证失败：用户不存在",
             headers={"WWW-Authenticate": "Bearer"},
         )
     
     if not user.is_active:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="用户已被禁用",
+            detail="认证失败：用户账户已被禁用",
             headers={"WWW-Authenticate": "Bearer"},
         )
     
@@ -85,8 +95,8 @@ async def get_current_active_user(
     """
     if not current_user.is_active:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="用户未激活"
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="权限不足：用户账户未激活"
         )
     return current_user
 
@@ -109,7 +119,7 @@ async def get_current_superuser(
     if not current_user.is_superuser:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="权限不足"
+            detail="权限不足：需要超级管理员权限"
         )
     return current_user
 

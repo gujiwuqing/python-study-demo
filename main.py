@@ -12,6 +12,8 @@ from config import config
 from app.utils.database import init_db, close_db
 from app.utils.response import ResponseUtil, CustomException
 from app.routes.user_routes import router as user_router
+from app.routes.role_routes import router as role_router
+from app.routes.menu_routes import router as menu_router
 
 # 配置日志
 logging.basicConfig(
@@ -84,7 +86,7 @@ async def http_exception_handler(request: Request, exc: HTTPException):
             content=exc.detail
         )
     
-    # 否则包装成统一格式
+    # 保持原始的错误信息，包装成统一格式
     response = ResponseUtil.error(exc.status_code, str(exc.detail))
     return JSONResponse(
         status_code=exc.status_code,
@@ -107,6 +109,8 @@ async def global_exception_handler(request: Request, exc: Exception):
 
 # 注册路由
 app.include_router(user_router)
+app.include_router(role_router)
+app.include_router(menu_router)
 
 # 根路径
 @app.get("/", summary="根路径")
@@ -142,3 +146,4 @@ if __name__ == "__main__":
         reload=config.DEBUG,
         log_level="info" if config.DEBUG else "warning"
     )
+
