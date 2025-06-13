@@ -68,7 +68,7 @@ def check_main_file():
         sys.exit(1)
 
 
-def start_application(host="0.0.0.0", port=8000, reload=True, workers=1):
+def start_application(host="0.0.0.0", port=8001, reload=True, workers=1):
     """启动应用"""
     print("🎯 启动应用...")
     print("访问地址：")
@@ -108,7 +108,7 @@ def main():
     """主函数"""
     parser = argparse.ArgumentParser(description="FastAPI 后端管理系统启动脚本")
     parser.add_argument("--host", default="0.0.0.0", help="绑定主机地址 (默认: 0.0.0.0)")
-    parser.add_argument("--port", type=int, default=8000, help="绑定端口 (默认: 8000)")
+    parser.add_argument("--port", type=int, default=8001, help="绑定端口 (默认: 8001)")
     parser.add_argument("--no-reload", action="store_true", help="禁用自动重载")
     parser.add_argument("--workers", type=int, default=1, help="工作进程数 (生产模式)")
     parser.add_argument("--skip-install", action="store_true", help="跳过依赖安装")

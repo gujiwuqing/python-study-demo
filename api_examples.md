@@ -120,7 +120,7 @@ Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...
 **请求示例**：
 
 ```bash
-curl -X POST "http://localhost:8000/api/users/register" \
+curl -X POST "http://localhost:8001/api/users/register" \
   -H "Content-Type: application/json" \
   -d '{
     "username": "testuser",
@@ -180,7 +180,7 @@ curl -X POST "http://localhost:8000/api/users/register" \
 **请求示例**：
 
 ```bash
-curl -X POST "http://localhost:8000/api/users/login" \
+curl -X POST "http://localhost:8001/api/users/login" \
   -H "Content-Type: application/json" \
   -d '{
     "username": "testuser",
@@ -228,7 +228,7 @@ curl -X POST "http://localhost:8000/api/users/login" \
 **请求示例**：
 
 ```bash
-curl -X GET "http://localhost:8000/api/users/me" \
+curl -X GET "http://localhost:8001/api/users/me" \
   -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
 ```
 
@@ -263,7 +263,7 @@ curl -X GET "http://localhost:8000/api/users/me" \
 **请求示例**：
 
 ```bash
-curl -X PUT "http://localhost:8000/api/users/me" \
+curl -X PUT "http://localhost:8001/api/users/me" \
   -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..." \
   -H "Content-Type: application/json" \
   -d '{
@@ -315,7 +315,7 @@ curl -X PUT "http://localhost:8000/api/users/me" \
 **请求示例**：
 
 ```bash
-curl -X PUT "http://localhost:8000/api/users/me/password" \
+curl -X PUT "http://localhost:8001/api/users/me/password" \
   -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..." \
   -H "Content-Type: application/json" \
   -d '{
@@ -351,7 +351,7 @@ curl -X PUT "http://localhost:8000/api/users/me/password" \
 **请求示例**：
 
 ```bash
-curl -X GET "http://localhost:8000/api/users?page=1&per_page=10&search=test" \
+curl -X GET "http://localhost:8001/api/users?page=1&per_page=10&search=test" \
   -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
 ```
 
@@ -418,7 +418,7 @@ curl -X GET "http://localhost:8000/api/users?page=1&per_page=10&search=test" \
 **请求示例**：
 
 ```bash
-curl -X POST "http://localhost:8000/api/users" \
+curl -X POST "http://localhost:8001/api/users" \
   -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..." \
   -H "Content-Type: application/json" \
   -d '{
@@ -473,7 +473,7 @@ curl -X POST "http://localhost:8000/api/users" \
 **请求示例**：
 
 ```bash
-curl -X GET "http://localhost:8000/api/users/1" \
+curl -X GET "http://localhost:8001/api/users/1" \
   -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
 ```
 
@@ -514,7 +514,7 @@ curl -X GET "http://localhost:8000/api/users/1" \
 **请求示例**：
 
 ```bash
-curl -X PUT "http://localhost:8000/api/users/1" \
+curl -X PUT "http://localhost:8001/api/users/1" \
   -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..." \
   -H "Content-Type: application/json" \
   -d '{
@@ -571,7 +571,7 @@ curl -X PUT "http://localhost:8000/api/users/1" \
 **请求示例**：
 
 ```bash
-curl -X DELETE "http://localhost:8000/api/users/1" \
+curl -X DELETE "http://localhost:8001/api/users/1" \
   -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
 ```
 
@@ -604,7 +604,7 @@ curl -X DELETE "http://localhost:8000/api/users/1" \
 **请求示例**：
 
 ```bash
-curl -X POST "http://localhost:8000/api/users/1/roles" \
+curl -X POST "http://localhost:8001/api/users/1/roles" \
   -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..." \
   -H "Content-Type: application/json" \
   -d '{
@@ -646,7 +646,7 @@ curl -X POST "http://localhost:8000/api/users/1/roles" \
 **请求示例**：
 
 ```bash
-curl -X POST "http://localhost:8000/api/roles" \
+curl -X POST "http://localhost:8001/api/roles" \
   -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..." \
   -H "Content-Type: application/json" \
   -d '{
@@ -694,7 +694,7 @@ curl -X POST "http://localhost:8000/api/roles" \
 **请求示例**：
 
 ```bash
-curl -X GET "http://localhost:8000/api/roles?page=1&per_page=10&search=管理" \
+curl -X GET "http://localhost:8001/api/roles?page=1&per_page=10&search=管理" \
   -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
 ```
 
@@ -755,7 +755,7 @@ curl -X GET "http://localhost:8000/api/roles?page=1&per_page=10&search=管理" \
 **请求示例**：
 
 ```bash
-curl -X GET "http://localhost:8000/api/roles/1" \
+curl -X GET "http://localhost:8001/api/roles/1" \
   -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
 ```
 
@@ -793,7 +793,7 @@ curl -X GET "http://localhost:8000/api/roles/1" \
 **请求示例**：
 
 ```bash
-curl -X PUT "http://localhost:8000/api/roles/1" \
+curl -X PUT "http://localhost:8001/api/roles/1" \
   -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..." \
   -H "Content-Type: application/json" \
   -d '{
@@ -845,7 +845,7 @@ curl -X PUT "http://localhost:8000/api/roles/1" \
 **请求示例**：
 
 ```bash
-curl -X DELETE "http://localhost:8000/api/roles/1" \
+curl -X DELETE "http://localhost:8001/api/roles/1" \
   -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
 ```
 
@@ -878,7 +878,7 @@ curl -X DELETE "http://localhost:8000/api/roles/1" \
 **请求示例**：
 
 ```bash
-curl -X POST "http://localhost:8000/api/roles/1/users" \
+curl -X POST "http://localhost:8001/api/roles/1/users" \
   -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..." \
   -H "Content-Type: application/json" \
   -d '{
@@ -918,7 +918,7 @@ curl -X POST "http://localhost:8000/api/roles/1/users" \
 **请求示例**：
 
 ```bash
-curl -X POST "http://localhost:8000/api/roles/1/menus" \
+curl -X POST "http://localhost:8001/api/roles/1/menus" \
   -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..." \
   -H "Content-Type: application/json" \
   -d '{
@@ -960,7 +960,7 @@ curl -X POST "http://localhost:8000/api/roles/1/menus" \
 **请求示例**：
 
 ```bash
-curl -X POST "http://localhost:8000/api/menus" \
+curl -X POST "http://localhost:8001/api/menus" \
   -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..." \
   -H "Content-Type: application/json" \
   -d '{
@@ -1026,7 +1026,7 @@ curl -X POST "http://localhost:8000/api/menus" \
 **请求示例**：
 
 ```bash
-curl -X GET "http://localhost:8000/api/menus?page=1&per_page=10&search=用户" \
+curl -X GET "http://localhost:8001/api/menus?page=1&per_page=10&search=用户" \
   -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
 ```
 
@@ -1084,7 +1084,7 @@ curl -X GET "http://localhost:8000/api/menus?page=1&per_page=10&search=用户" \
 **请求示例**：
 
 ```bash
-curl -X GET "http://localhost:8000/api/menus/tree" \
+curl -X GET "http://localhost:8001/api/menus/tree" \
   -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
 ```
 
@@ -1138,7 +1138,7 @@ curl -X GET "http://localhost:8000/api/menus/tree" \
 **请求示例**：
 
 ```bash
-curl -X GET "http://localhost:8000/api/menus/me" \
+curl -X GET "http://localhost:8001/api/menus/me" \
   -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
 ```
 
@@ -1192,7 +1192,7 @@ curl -X GET "http://localhost:8000/api/menus/me" \
 **请求示例**：
 
 ```bash
-curl -X GET "http://localhost:8000/api/menus/user/1" \
+curl -X GET "http://localhost:8001/api/menus/user/1" \
   -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
 ```
 
@@ -1237,7 +1237,7 @@ curl -X GET "http://localhost:8000/api/menus/user/1" \
 **请求示例**：
 
 ```bash
-curl -X GET "http://localhost:8000/api/menus/1" \
+curl -X GET "http://localhost:8001/api/menus/1" \
   -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
 ```
 
@@ -1281,7 +1281,7 @@ curl -X GET "http://localhost:8000/api/menus/1" \
 **请求示例**：
 
 ```bash
-curl -X PUT "http://localhost:8000/api/menus/1" \
+curl -X PUT "http://localhost:8001/api/menus/1" \
   -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..." \
   -H "Content-Type: application/json" \
   -d '{
@@ -1346,7 +1346,7 @@ curl -X PUT "http://localhost:8000/api/menus/1" \
 **请求示例**：
 
 ```bash
-curl -X DELETE "http://localhost:8000/api/menus/1" \
+curl -X DELETE "http://localhost:8001/api/menus/1" \
   -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
 ```
 

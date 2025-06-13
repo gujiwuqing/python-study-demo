@@ -54,11 +54,11 @@ fi
 # 启动应用
 echo "🎯 启动应用..."
 echo "访问地址："
-echo "  - 主页: http://localhost:8000"
-echo "  - API文档: http://localhost:8000/docs"
-echo "  - ReDoc文档: http://localhost:8000/redoc"
-echo "  - 健康检查: http://localhost:8000/health"
+echo "  - 主页: http://localhost:8001"
+echo "  - API文档: http://localhost:8001/docs"
+echo "  - ReDoc文档: http://localhost:8001/redoc"
+echo "  - 健康检查: http://localhost:8001/health"
 echo ""
 
 # 使用uvicorn启动
-python3 -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+python3 -m uvicorn main:app --host 0.0.0.0 --port 8001 --reload

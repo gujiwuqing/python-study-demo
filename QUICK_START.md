@@ -5,8 +5,8 @@
 ### 1. Swagger文档已配置 ✅
 
 项目已经集成了Swagger文档，启动后可以访问：
-- **Swagger UI**: http://localhost:8000/docs
-- **ReDoc**: http://localhost:8000/redoc
+- **Swagger UI**: http://localhost:8001/docs
+- **ReDoc**: http://localhost:8001/redoc
 
 ### 2. 解决依赖安装问题 ✅
 
@@ -60,7 +60,7 @@ nano .env
 # 4. 启动应用
 python3 main.py
 # 或使用uvicorn
-uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+uvicorn main:app --host 0.0.0.0 --port 8001 --reload
 ```
 
 ## 环境准备
@@ -96,16 +96,16 @@ alembic upgrade head
 
 | 服务 | 地址 | 说明 |
 |------|------|------|
-| 主页 | http://localhost:8000 | 应用首页 |
-| **Swagger文档** | http://localhost:8000/docs | **API接口文档和调试界面** |
-| ReDoc文档 | http://localhost:8000/redoc | API文档（ReDoc样式） |
-| 健康检查 | http://localhost:8000/health | 服务健康状态 |
+| 主页 | http://localhost:8001 | 应用首页 |
+| **Swagger文档** | http://localhost:8001/docs | **API接口文档和调试界面** |
+| ReDoc文档 | http://localhost:8001/redoc | API文档（ReDoc样式） |
+| 健康检查 | http://localhost:8001/health | 服务健康状态 |
 
 ## API接口测试
 
 ### 使用Swagger UI（推荐）
 
-1. 访问 http://localhost:8000/docs
+1. 访问 http://localhost:8001/docs
 2. 展开接口分组（如"用户管理"）
 3. 点击要测试的接口
 4. 点击"Try it out"按钮
@@ -156,7 +156,7 @@ pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple/
 ### Q3: 端口被占用怎么办？
 ```bash
 # 查看端口占用
-lsof -i :8000
+lsof -i :8001
 
 # 或者使用其他端口启动
 python3 start.py --port 8080
