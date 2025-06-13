@@ -43,6 +43,11 @@ async def init_db():
     """
     初始化数据库
     """
+    # 导入所有模型以确保SQLAlchemy能够找到它们
+    from app.models.associations import user_role_association, role_menu_association
+    from app.models.user import User, Role
+    from app.models.menu import Menu
+    
     async with async_engine.begin() as conn:
         # 创建所有表
         await conn.run_sync(Base.metadata.create_all)

@@ -4,16 +4,7 @@
 from sqlalchemy import Column, String, Boolean, Integer, ForeignKey, Table
 from sqlalchemy.orm import relationship
 from app.models.base import BaseModel
-
-# 用户角色关联表
-user_role_association = Table(
-    'user_roles',
-    BaseModel.metadata,
-    Column('user_id', Integer, ForeignKey('users.id'), primary_key=True, comment="用户ID"),
-    Column('role_id', Integer, ForeignKey('roles.id'), primary_key=True, comment="角色ID"),
-    comment="用户角色关联表"
-)
-
+from app.models.associations import user_role_association
 
 class User(BaseModel):
     """用户模型"""

@@ -4,15 +4,7 @@
 from sqlalchemy import Column, String, Boolean, Integer, ForeignKey, Table
 from sqlalchemy.orm import relationship
 from app.models.base import BaseModel
-
-# 角色菜单关联表
-role_menu_association = Table(
-    'role_menu_association',
-    BaseModel.metadata,
-    Column('role_id', Integer, ForeignKey('roles.id'), primary_key=True, comment="角色ID"),
-    Column('menu_id', Integer, ForeignKey('menus.id'), primary_key=True, comment="菜单ID"),
-    comment="角色菜单关联表"
-)
+from app.models.associations import role_menu_association
 
 
 class Menu(BaseModel):
@@ -30,8 +22,8 @@ class Menu(BaseModel):
     is_visible = Column(Boolean, default=True, comment="是否显示")
     is_active = Column(Boolean, default=True, comment="是否启用")
     
-    # 自关联：父子菜单关系
-    children = relationship("Menu", backref="parent", remote_side=[id])
+    # 自关联：父子菜单关系 - 使用 lambda 表达式修复自引用问题
+    children = relationship("Menu", backref="parent", remote_side=lambda: [Menu.id])
     # 关联角色
     roles = relationship("Role", secondary=role_menu_association, back_populates="menus")
     
