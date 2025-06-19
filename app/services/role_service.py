@@ -63,7 +63,10 @@ class RoleService:
         """
         result = await db.execute(
             select(Role)
-            .options(selectinload(Role.users), selectinload(Role.menus))
+            .options(
+                selectinload(Role.users),
+                selectinload(Role.menus).where(Menu.is_deleted == False, Menu.is_active == True)
+            )
             .where(Role.id == role_id, Role.is_deleted == False)
         )
         return result.scalar_one_or_none()
@@ -145,7 +148,7 @@ class RoleService:
         await db.commit()
         await db.refresh(role)
         
-        return role.to_dict()
+        return role.to_dict(include_relationships=['users', 'menus'])
     
     @staticmethod
     async def delete_role(db: AsyncSession, role_id: int) -> bool:
@@ -212,12 +215,18 @@ class RoleService:
         total = total_result.scalar()
         
         # 获取分页数据
-        query = query.options(selectinload(Role.users), selectinload(Role.menus)).offset(offset).limit(per_page)
+        query = query.options(
+            selectinload(Role.users), 
+            selectinload(Role.menus).where(Menu.is_deleted == False, Menu.is_active == True)
+        ).offset(offset).limit(per_page)
         result = await db.execute(query)
         roles = result.scalars().all()
         
         # 转换为字典
-        items = [role.to_dict() for role in roles]
+        items = []
+        for role in roles:
+            role_data = role.to_dict(include_relationships=['users', 'menus'])
+            items.append(role_data)
         
         return {
             "items": items,

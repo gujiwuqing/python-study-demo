@@ -190,7 +190,15 @@ async def get_user_by_id(
             response = ResponseUtil.not_found("用户不存在")
             raise HTTPException(status_code=404, detail=response.to_dict())
         
-        user_data = user.to_dict()
+        user_data = user.to_dict(include_relationships=['roles'])
+        # 为每个角色添加菜单数据
+        if 'roles' in user_data and user_data['roles']:
+            for role_data in user_data['roles']:
+                # 获取对应的角色对象来获取菜单数据
+                role_obj = next((r for r in user.roles if r.id == role_data['id']), None)
+                if role_obj:
+                    role_data['menus'] = [menu.to_dict() for menu in role_obj.menus if menu.is_active and not menu.is_deleted]
+        
         response = ResponseUtil.success(user_data, "查询成功")
         return response.to_dict()
         

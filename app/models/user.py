@@ -25,9 +25,9 @@ class User(BaseModel):
     def __repr__(self):
         return f"<User(id={self.id}, username='{self.username}', email='{self.email}')>"
     
-    def to_dict(self, include_password: bool = False) -> dict:
+    def to_dict(self, include_password: bool = False, include_relationships: list = None) -> dict:
         """转换为字典，默认不包含密码"""
-        data = super().to_dict()
+        data = super().to_dict(include_relationships=include_relationships)
         if not include_password:
             data.pop('hashed_password', None)
         return data

@@ -72,7 +72,9 @@ class UserService:
         """
         result = await db.execute(
             select(User)
-            .options(selectinload(User.roles))
+            .options(
+                selectinload(User.roles).selectinload(Role.menus)
+            )
             .where(User.id == user_id, User.is_deleted == False)
         )
         return result.scalar_one_or_none()
@@ -181,7 +183,17 @@ class UserService:
         await db.commit()
         await db.refresh(user)
         
-        return user.to_dict()
+        # 返回包含关联数据的用户信息
+        user_data = user.to_dict(include_relationships=['roles'])
+        # 为每个角色添加菜单数据
+        if 'roles' in user_data and user_data['roles']:
+            for role_data in user_data['roles']:
+                # 获取对应的角色对象来获取菜单数据
+                role_obj = next((r for r in user.roles if r.id == role_data['id']), None)
+                if role_obj:
+                    role_data['menus'] = [menu.to_dict() for menu in role_obj.menus if menu.is_active and not menu.is_deleted]
+        
+        return user_data
     
     @staticmethod
     async def delete_user(db: AsyncSession, user_id: int) -> bool:
@@ -277,12 +289,24 @@ class UserService:
         total = total_result.scalar()
         
         # 获取分页数据
-        query = query.options(selectinload(User.roles)).offset(offset).limit(per_page)
+        query = query.options(
+            selectinload(User.roles).selectinload(Role.menus)
+        ).offset(offset).limit(per_page)
         result = await db.execute(query)
         users = result.scalars().all()
         
         # 转换为字典
-        items = [user.to_dict() for user in users]
+        items = []
+        for user in users:
+            user_data = user.to_dict(include_relationships=['roles'])
+            # 为每个角色添加菜单数据
+            if 'roles' in user_data and user_data['roles']:
+                for role_data in user_data['roles']:
+                    # 获取对应的角色对象来获取菜单数据
+                    role_obj = next((r for r in user.roles if r.id == role_data['id']), None)
+                    if role_obj:
+                        role_data['menus'] = [menu.to_dict() for menu in role_obj.menus if menu.is_active and not menu.is_deleted]
+            items.append(user_data)
         
         return {
             "items": items,
