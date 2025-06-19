@@ -28,13 +28,30 @@ class MenuService:
             Dict[str, Any]: 创建的菜单信息
             
         Raises:
-            BusinessException: 父菜单不存在
+            BusinessException: 父菜单不存在或菜单名称/路径重复
         """
         # 如果有父菜单ID，检查父菜单是否存在
         if menu_data.parent_id:
             parent_menu = await MenuService.get_menu_by_id(db, menu_data.parent_id)
             if not parent_menu:
                 raise BusinessException("父菜单不存在")
+        
+        # 检查菜单名称是否重复
+        name_result = await db.execute(
+            select(Menu).where(Menu.name == menu_data.name, Menu.is_deleted == False).limit(1)
+        )
+        existing_name_menu = name_result.scalar_one_or_none()
+        if existing_name_menu:
+            raise BusinessException("菜单名称已存在")
+        
+        # 检查菜单路径是否重复（如果路径不为空）
+        if menu_data.path:
+            path_result = await db.execute(
+                select(Menu).where(Menu.path == menu_data.path, Menu.is_deleted == False).limit(1)
+            )
+            existing_path_menu = path_result.scalar_one_or_none()
+            if existing_path_menu:
+                raise BusinessException("菜单路径已存在")
         
         # 创建菜单
         db_menu = Menu(**menu_data.model_dump())
@@ -79,7 +96,7 @@ class MenuService:
             
         Raises:
             NotFoundException: 菜单不存在
-            BusinessException: 父菜单不存在或不能设置自己为父菜单
+            BusinessException: 父菜单不存在或不能设置自己为父菜单或菜单名称/路径重复
         """
         menu = await MenuService.get_menu_by_id(db, menu_id)
         if not menu:
@@ -94,6 +111,32 @@ class MenuService:
                 parent_menu = await MenuService.get_menu_by_id(db, menu_data.parent_id)
                 if not parent_menu:
                     raise BusinessException("父菜单不存在")
+        
+        # 检查菜单名称是否重复（如果要更新名称）
+        if menu_data.name is not None:
+            name_result = await db.execute(
+                select(Menu).where(
+                    Menu.name == menu_data.name, 
+                    Menu.is_deleted == False, 
+                    Menu.id != menu_id
+                ).limit(1)
+            )
+            existing_name_menu = name_result.scalar_one_or_none()
+            if existing_name_menu:
+                raise BusinessException("菜单名称已存在")
+        
+        # 检查菜单路径是否重复（如果要更新路径且路径不为空）
+        if menu_data.path is not None and menu_data.path:
+            path_result = await db.execute(
+                select(Menu).where(
+                    Menu.path == menu_data.path, 
+                    Menu.is_deleted == False, 
+                    Menu.id != menu_id
+                ).limit(1)
+            )
+            existing_path_menu = path_result.scalar_one_or_none()
+            if existing_path_menu:
+                raise BusinessException("菜单路径已存在")
         
         # 更新字段
         update_data = menu_data.model_dump(exclude_unset=True)

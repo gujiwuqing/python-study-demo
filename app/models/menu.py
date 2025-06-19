@@ -11,8 +11,8 @@ class Menu(BaseModel):
     """菜单模型"""
     __tablename__ = "menus"
     
-    name = Column(String(50), nullable=False, comment="菜单名称")
-    path = Column(String(255), nullable=True, comment="菜单路径")
+    name = Column(String(50), nullable=False,unique=True, comment="菜单名称")
+    path = Column(String(255), nullable=True,unique=True, comment="菜单路径")
     component = Column(String(255), nullable=True, comment="组件路径")
     icon = Column(String(100), nullable=True, comment="菜单图标")
     order_num = Column(Integer, default=0, comment="排序号")
